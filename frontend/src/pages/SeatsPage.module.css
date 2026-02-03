@@ -1,0 +1,675 @@
+/* src/pages/SeatsPage.module.css */
+
+.container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #ffffff;
+  overflow-x: hidden;
+}
+
+.header {
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border-bottom: 2px solid rgba(225, 29, 72, 0.3);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  padding: 1rem 0;
+}
+
+.headerContent {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2rem;
+}
+
+.movieTitle h1 {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #e11d48;
+  margin: 0 0 0.5rem 0;
+}
+
+.movieMeta {
+  display: flex;
+  gap: 1rem;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.timer {
+  text-align: center;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.timerLabel {
+  font-size: 0.75rem;
+  color: #fca5a5;
+  margin-bottom: 0.25rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.timerValue {
+  font-size: 1.75rem;
+  font-weight: bold;
+  color: #f87171;
+  font-family: 'Courier New', monospace;
+}
+
+.timerWarning {
+  color: #ef4444;
+  animation: pulse 1s infinite;
+}
+
+.theaterContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+/* 스크린 섹션 - 상단에 크게 배치 */
+.screenSection {
+  margin-bottom: 3rem;
+  display: flex;
+  justify-content: center;
+  perspective: 1000px;
+}
+
+.screen {
+  position: relative;
+  width: 85%;
+  height: 80px;
+  background: linear-gradient(135deg, #374151, #4b5563, #6b7280);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 2px 8px rgba(255,255,255,0.1),
+    0 0 60px rgba(59, 130, 246, 0.2);
+  transform: rotateX(-5deg);
+  border: 3px solid rgba(147, 197, 253, 0.3);
+  overflow: hidden;
+}
+
+.screen::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 200%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.1),
+    transparent
+  );
+  animation: screenShine 3s infinite;
+}
+
+.screenText {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #e2e8f0;
+  letter-spacing: 0.3em;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  z-index: 2;
+}
+
+.screenGlow {
+  position: absolute;
+  top: -20px;
+  left: -20px;
+  right: -20px;
+  bottom: -20px;
+  background: radial-gradient(ellipse, rgba(59, 130, 246, 0.1), transparent);
+  border-radius: 60px;
+  z-index: -1;
+}
+
+.mainContent {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 2rem;
+  align-items: start;
+}
+
+/* 좌석 맵 섹션 */
+.seatMapSection {
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seatMap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 2rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.seatRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 1rem;
+}
+
+.seatRow[data-row="A"], .seatRow[data-row="B"] {
+  transform: perspective(200px) rotateX(2deg);
+}
+
+.seatRow[data-row="I"], .seatRow[data-row="J"] {
+  transform: perspective(200px) rotateX(-2deg);
+}
+
+.rowLabel {
+  width: 32px;
+  text-align: center;
+  font-weight: bold;
+  font-size: 1.125rem;
+  color: #64748b;
+}
+
+.seatsContainer {
+  display: grid;
+  align-items: center;
+}
+
+.seat {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.625rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.seat:hover:not(:disabled) {
+  transform: scale(1.15);
+  z-index: 10;
+}
+
+.seatNumber {
+  position: absolute;
+  font-size: 0.5rem;
+  font-weight: bold;
+}
+
+.seatIcon {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  font-size: 0.5rem;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* 좌석 타입별 스타일 */
+.seat.available {
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  border: 2px solid rgba(16, 185, 129, 0.5);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.seat.available:hover {
+  background: linear-gradient(135deg, #059669, #047857);
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.5);
+}
+
+.seat.selected {
+  background: linear-gradient(135deg, #e11d48, #be185d);
+  color: white;
+  border: 2px solid #fbbf24;
+  box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+  animation: selectedPulse 2s infinite;
+}
+
+.seat.occupied {
+  background: linear-gradient(135deg, #64748b, #475569);
+  color: #94a3b8;
+  cursor: not-allowed;
+  border: 2px solid rgba(100, 116, 139, 0.5);
+}
+
+.seat.vip {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+  border: 2px solid rgba(245, 158, 11, 0.7);
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
+}
+
+.seat.vip:hover {
+  background: linear-gradient(135deg, #d97706, #b45309);
+  box-shadow: 0 6px 20px rgba(245, 158, 11, 0.6);
+}
+
+.seat.couple {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+  border: 2px solid rgba(236, 72, 153, 0.7);
+  box-shadow: 0 4px 16px rgba(236, 72, 153, 0.4);
+}
+
+.seat.couple:hover {
+  background: linear-gradient(135deg, #db2777, #be185d);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.6);
+}
+
+.seat.disabled {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: 2px solid rgba(59, 130, 246, 0.7);
+  box-shadow: 0 4px 16px rgba(59, 130, 246, 0.4);
+}
+
+.seat.disabled:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 6px 20px rgba(59, 130, 246, 0.6);
+}
+
+/* 범례 */
+.legend {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #cbd5e1;
+  flex-direction: column;
+  text-align: center;
+}
+
+.legendSeat {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.legendSeat.available {
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.legendSeat.selected {
+  background: linear-gradient(135deg, #e11d48, #be185d);
+  border-color: #fbbf24;
+}
+
+.legendSeat.occupied {
+  background: linear-gradient(135deg, #64748b, #475569);
+}
+
+.legendSeat.vip {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  color: white;
+}
+
+.legendSeat.couple {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+}
+
+.legendSeat.disabled {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+}
+
+.legendPrice {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: normal;
+}
+
+/* 사이드바 */
+.sidebar {
+  position: sticky;
+  top: 140px;
+  height: fit-content;
+}
+
+.selectionPanel {
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(15px);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.selectionPanel h3 {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #f8fafc;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+}
+
+.selectedSeatsList {
+  margin-bottom: 2rem;
+}
+
+.selectedSeatItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(225, 29, 72, 0.1);
+  border: 1px solid rgba(225, 29, 72, 0.3);
+  border-radius: 12px;
+  margin-bottom: 0.75rem;
+}
+
+.seatInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.seatId {
+  font-weight: bold;
+  font-size: 1rem;
+  color: #fbbf24;
+}
+
+.seatType {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.seatPrice {
+  font-weight: bold;
+  color: #f8fafc;
+}
+
+.totalSection {
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-top: 1rem;
+}
+
+.totalPrice {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.totalPrice span {
+  font-size: 1rem;
+  color: #cbd5e1;
+}
+
+.totalPrice strong {
+  font-size: 1.5rem;
+  color: #fbbf24;
+  font-weight: bold;
+}
+
+.seatCount {
+  text-align: center;
+  font-size: 0.875rem;
+  color: #94a3b8;
+}
+
+.noSeatsSelected {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: #64748b;
+}
+
+.noSeatsIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.noSeatsSelected p {
+  font-size: 1.125rem;
+  margin: 0 0 0.5rem 0;
+}
+
+.noSeatsSelected small {
+  font-size: 0.875rem;
+  color: #475569;
+}
+
+.paymentButton {
+  width: 100%;
+  padding: 1rem 1.5rem;
+  background: linear-gradient(135deg, #e11d48, #be185d);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 2rem;
+}
+
+.paymentButton:hover:not(:disabled) {
+  background: linear-gradient(135deg, #be185d, #9f1239);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(225, 29, 72, 0.4);
+}
+
+.paymentButton:disabled {
+  background: linear-gradient(135deg, #64748b, #475569);
+  cursor: not-allowed;
+  transform: none;
+  opacity: 0.6;
+}
+
+.notice {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.notice h4 {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #93c5fd;
+  margin: 0 0 1rem 0;
+}
+
+.notice ul {
+  margin: 0;
+  padding-left: 1.25rem;
+  color: #cbd5e1;
+  font-size: 0.875rem;
+  line-height: 1.6;
+}
+
+.notice li {
+  margin-bottom: 0.5rem;
+}
+
+.notice li:last-child {
+  margin-bottom: 0;
+}
+
+/* 오류 화면 */
+.errorMessage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  text-align: center;
+  padding: 2rem;
+}
+
+.errorMessage h2 {
+  font-size: 1.75rem;
+  color: #ef4444;
+  margin-bottom: 1rem;
+}
+
+.errorMessage p {
+  font-size: 1rem;
+  color: #94a3b8;
+  margin-bottom: 2rem;
+}
+
+.backButton {
+  padding: 1rem 2rem;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.backButton:hover {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-2px);
+}
+
+/* 애니메이션 */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes selectedPulse {
+  0%, 100% { 
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+  }
+  50% { 
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.9);
+  }
+}
+
+@keyframes screenShine {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+  .mainContent {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .sidebar {
+    position: static;
+  }
+  
+  .seat {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .seatNumber {
+    font-size: 0.45rem;
+  }
+  
+  .seatIcon {
+    font-size: 0.45rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .theaterContainer {
+    padding: 1rem;
+  }
+  
+  .headerContent {
+    flex-direction: column;
+    gap: 1rem;
+    text-align: center;
+  }
+  
+  .screen {
+    height: 60px;
+  }
+  
+  .screenText {
+    font-size: 1.125rem;
+    letter-spacing: 0.2em;
+  }
+  
+  .seatMapSection {
+    padding: 1rem;
+  }
+  
+  .seat {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .seatNumber {
+    font-size: 0.4rem;
+  }
+  
+  .seatIcon {
+    font-size: 0.4rem;
+    top: -2px;
+    right: -2px;
+  }
+  
+  .seatsContainer {
+    gap: 2px;
+  }
+  
+  .legend {
+    gap: 1rem;
+  }
+  
+  .legendItem {
+    font-size: 0.75rem;
+  }
+  
+  .legendSeat {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .selectionPanel {
+    padding: 1.5rem;
+  }
+}

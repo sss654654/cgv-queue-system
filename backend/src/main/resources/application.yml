@@ -1,0 +1,240 @@
+# ===============================================================
+#          기본 프로필 (Default / Local)
+# ===============================================================
+# 모든 환경에서 공통으로 사용되는 기본 설정을 정의합니다.
+# 로컬 개발 시에는 이 프로필이 기본으로 활성화됩니다.
+# ---------------------------------------------------------------
+
+# Admission Control (대기열 시스템) 관련 설정
+admission:
+  # 동적 스케일링 설정 (환경 변수가 없으면 이 기본값을 사용)
+  enable-dynamic-scaling: ${ENABLE_DYNAMIC_SCALING:true}
+  base-sessions-per-pod: ${BASE_SESSIONS_PER_POD:2}
+  max-total-sessions: ${MAX_TOTAL_SESSIONS:50}
+  fallback-pod-count: ${FALLBACK_POD_COUNT:1}
+  
+
+  # 배치 처리 및 부하분산 설정
+  aggressive-batch-processing: true
+  enable-proactive-admission: true
+  enable-load-balancing: true
+  load-balancing-strategy: "ROUND_ROBIN"
+  metrics-collection-interval: 5000
+  performance-auto-tuning: true
+
+  use-kinesis: true     
+
+
+  # Kinesis 및 세션 타임아웃
+  kinesis-stream-name: ${KINESIS_STREAM_NAME:prod-cgv-admissions-stream}
+  max-active-sessions: ${MAX_ACTIVE_SESSIONS:2}
+  session-timeout-seconds: ${SESSION_TIMEOUT_SECONDS:30}
+
+# Kubernetes Pod Discovery 관련 설정
+kubernetes:
+  namespace: ${KUBERNETES_NAMESPACE:default}
+admission-discovery:
+  enable-k8s-discovery: ${ENABLE_K8S_DISCOVERY:true}
+
+spring:
+  # 기본 활성 프로필
+  profiles:
+    active: local
+
+  # 애플리케이션 정보
+  application:
+    name: user-management-backend
+
+  # 로컬 개발용 .env 파일 import / ..
+  config:
+    import: optional:file:.env[.properties]
+
+  # ========== 데이터소스 설정 (Write/Read 분리) ==========
+  datasource:
+    write:
+      name: write
+      jdbc-url: jdbc:mysql://${WRITE_URL:localhost}:${WRITE_PORT:3306}/${DB:cgv}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: ${USERNAME:root}
+      password: ${PASSWORD:password}
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+    read:
+      name: read
+      jdbc-url: jdbc:mysql://${READ_URL:localhost}:${READ_PORT:3306}/${DB:cgv}
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      username: ${USERNAME:root}
+      password: ${PASSWORD:password}
+      hikari:
+        maximum-pool-size: 10
+        minimum-idle: 5
+
+  # ========== JPA 및 Hibernate 설정 ==========
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    show-sql: true
+    hibernate:
+      ddl-auto: create-drop # 로컬/개발 환경에서는 스키마 자동 생성/삭제
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    defer-datasource-initialization: false
+
+  # ========== Redis 설정 ==========
+  data:
+    redis:
+      host: ${REDIS_HOST} # 기본값으로 localhost 사용
+      port: ${REDIS_PORT}
+      timeout: 2000ms
+      ssl:
+        enabled: ${REDIS_SSL_ENABLED:false} # 로컬에서는 SSL 비활성화
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+
+  # ========== AWS 연동 설정 ==========
+  cloud:
+    aws:
+      region:
+        static: ${AWS_REGION:ap-northeast-2}
+      stack:
+        auto: false # CloudFormation 스택 자동 감지 비활성화
+      kinesis:
+        enabled: true
+      credentials:
+        instance-profile: true # EKS IRSA 사용
+
+  # DB 초기화 SQL 설정
+  sql:
+    init:
+      mode: always
+      data-locations: classpath:data.sql
+
+# 서버 설정
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  tomcat:
+      # WebSocket 연결 타임아웃 증가
+      connection-timeout: 120000  # 2분
+      # 최대 연결 수 증가 (8000명 대응)
+      max-connections: 12000
+      # 최대 스레드 수 증가
+      max-threads: 400
+      # accept 카운트 증가
+      accept-count: 200
+
+# 로깅 설정
+logging:
+  level:
+    com.example: DEBUG
+    com.example.admission.QueueProcessor: WARN
+    org.springframework.web: DEBUG
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    software.amazon.awssdk: INFO
+    io.awspring.cloud: DEBUG
+
+# Swagger (API 문서) 설정
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: method
+    tagsSorter: alpha
+    display-request-duration: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+
+---
+
+# ===============================================================
+#          운영 환경 (prod) 프로필
+# ===============================================================
+# 'prod' 프로필 활성화 시, 아래 설정들이 기본 프로필 설정을 덮어씁니다.
+# 공통 설정은 위에 정의되어 있으므로, 여기서는 변경되는 값만 관리합니다.
+# ---------------------------------------------------------------
+spring:
+  config:
+    activate:
+      on-profile: prod
+  websocket:
+    # 메시지 크기 제한 증가
+    message-size-limit: 131072  # 128KB (기본값의 2배)
+    # 송신 버퍼 크기 증가
+    send-buffer-size-limit: 1048576  # 1MB (기본값의 2배)
+    # 전송 시간 제한 증가
+    send-time-limit: 30000  # 30초
+  # ========== 운영용 데이터소스 설정 (커넥션 풀 확장) ==========
+  datasource:
+    write:
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 10
+        connection-timeout: 20000
+        idle-timeout: 300000
+        max-lifetime: 1200000
+    read:
+      hikari:
+        maximum-pool-size: 20
+        minimum-idle: 10
+
+  # ========== 운영용 Redis 설정 (SSL 활성화, 타임아웃/풀 확장) ==========
+  data:
+    redis:
+      host: ${REDIS_HOST:prod-cgv-redis-cluster-gfbhur.serverless.apn2.cache.amazonaws.com}
+      port: ${REDIS_PORT:6379}
+      timeout: 5000ms
+      ssl:
+        enabled: true
+      lettuce:
+        pool:
+          max-active: 50   # 최대 활성 연결
+          max-idle: 20     # 최대 유휴 연결
+          min-idle: 5      # 최소 유휴 연결
+          max-wait: 5000   # 최대 대기 시간 (5초)
+
+  # ========== 운영용 JPA 설정 (스키마 검증) ==========
+  jpa:
+    hibernate:
+      ddl-auto: validate # 운영에서는 스키마를 직접 변경하지 않고 검증만 수행
+    show-sql: false # 운영에서는 SQL 로그 비활성화
+
+  # ========== 운영용 AWS 설정 (Kinesis 엔드포인트 명시) ==========
+  cloud:
+    aws:
+      kinesis:
+        enabled: true
+        endpoint: https://kinesis.${AWS_REGION:ap-northeast-2}.amazonaws.com
+      credentials:
+        instance-profile: false # EC2 인스턴스 프로필 사용 안 함
+        web-identity-token-file: /var/run/secrets/eks.amazonaws.com/serviceaccount/token
+        role-arn: "arn:aws:iam::732739477448:role/prod-EKS-App-Role" # 사용할 IAM 역할 ARN
+
+# ========== 운영용 Admission Control 설정 (값 상향) ==========
+admission:
+  max-total-sessions: ${MAX_TOTAL_SESSIONS:10}
+  fallback-pod-count: ${FALLBACK_POD_COUNT:3}
+
+# ========== 운영용 로깅 설정 (로그 레벨 조정) ==========
+logging:
+  level:
+    com.example: INFO # 운영에서는 INFO 레벨 이상만 기록
+    software.amazon.awssdk: INFO
+    org.springframework.web.socket: WARN  # WebSocket 로그 감소
+    org.springframework.messaging: WARN   # 메시징 로그 감소
+    com.example.admission: INFO          # 애플리케이션 로그는 유지
+    software.amazon.awssdk.request: DEBUG # 단, AWS API 요청은 디버깅을 위해 DEBUG 유지
+    io.awspring.cloud: INFO
+
+kubernetes:
+  namespace: cgv-api # 이전에 확인하신, Pod이 실행 중인 네임스페이스
+  app-label: app.kubernetes.io/name=cgv-api

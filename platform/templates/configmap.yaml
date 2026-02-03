@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ include "cgv-api.fullname" . }}-config
+  labels:
+    {{- include "cgv-api.labels" . | nindent 4 }}
+    component: api-server
+data:
+  # ★★★ 기존 설정들 ★★★
+  USERNAME: {{ .Values.config.username | quote }}
+  DB: {{ .Values.config.database | quote }}
+  WRITE_URL: {{ .Values.config.writeUrl | quote }}
+  WRITE_PORT: {{ .Values.config.writePort | quote }}
+  READ_URL: {{ .Values.config.readUrl | quote }}
+  READ_PORT: {{ .Values.config.readPort | quote }}
+
+  REDIS_HOST: {{ .Values.config.redisHost | quote }}
+  REDIS_PORT: {{ .Values.config.redisPort | quote }}
+
+  # ===== ★★★ Kinesis 환경변수 추가 ★★★ ===== #
+  KINESIS_STREAM_NAME: {{ .Values.config.kinesisStreamName | quote }}
+  USE_KINESIS: {{ .Values.config.useKinesis | quote }}
+  KINESIS_CONSUMER_ENABLED: {{ .Values.config.kinesisConsumerEnabled | quote }}
+  KINESIS_BATCH_SIZE: {{ .Values.config.kinesisBatchSize | quote }}
+  KINESIS_POLL_INTERVAL: {{ .Values.config.kinesisPollInterval | quote }}
+
+  MAX_ACTIVE_SESSIONS: {{ .Values.config.maxActiveSessions | quote }}
+  SESSION_TIMEOUT_SECONDS: {{ .Values.config.sessionTimeoutSeconds | quote }}
+  
+  # ★★★ 새로 추가할 동적 스케일링 환경변수들 ★★★
+  BASE_SESSIONS_PER_POD: {{ .Values.config.baseSessionsPerPod | quote }}
+  MAX_TOTAL_SESSIONS: {{ .Values.config.maxTotalSessions | quote }}
+  ENABLE_DYNAMIC_SCALING: {{ .Values.config.enableDynamicScaling | quote }}
+  FALLBACK_POD_COUNT: {{ .Values.config.fallbackPodCount | quote }}
+  KUBERNETES_NAMESPACE: {{ .Values.config.kubernetesNamespace | quote }}
+  ENABLE_K8S_DISCOVERY: {{ .Values.config.enableK8sDiscovery | quote }}
+  
+  # ★★★ Spring Application Name 추가 ★★★
+  SPRING_APPLICATION_NAME: "cgv-api"
+
+---
+{{/*
+Common labels
+*/}}
+{{- define "cgv-api.labels" -}}
+helm.sh/chart: {{ include "cgv-api.chart" . }}
+{{ include "cgv-api.selectorLabels" . }}
+{{- if .Chart.AppVersion }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+{{/*
+Selector labels
+*/}}
+{{- define "cgv-api.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "cgv-api.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+{{/*
+Create a default fully qualified app name.
+*/}}
+{{- define "cgv-api.fullname" -}}
+{{- if .Values.fullnameOverride }}
+{{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "cgv-api.name" -}}
+{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+{{/*
+Create chart name and version as used by the chart label.
+*/}}
+{{- define "cgv-api.chart" -}}
+{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}

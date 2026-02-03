@@ -1,0 +1,30 @@
+image:
+  repository: "732739477448.dkr.ecr.ap-northeast-2.amazonaws.com/qa-cgv-api"
+  tag: "v1.2.0"
+  pullPolicy: IfNotPresent
+
+namespace: qa-app
+
+replicaCount: 2
+
+resources:
+  requests:
+    memory: "200Mi"
+    cpu: "200m"
+  limits:
+    memory: "400Mi"
+    cpu: "400m"
+
+ingress:
+  host: "qa.cgv.kro.kr"
+
+config:
+  username: "qa-admin"
+  database: "cgv-qa"
+  writeUrl: "qa-db-writer.cgv.com"
+  writePort: "3306"
+  readUrl: "qa-db-reader.cgv.com"
+  readPort: "3306"
+
+secret:
+  password: ""

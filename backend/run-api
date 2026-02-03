@@ -1,0 +1,16 @@
+#!/bin/bash
+set -e
+
+mvn clean package
+
+if [ $1 = "dev" ] ; then
+  echo "========= Run Development ========="
+  docker compose -f docker-compose.dev.yml up -d --build
+elif [ $1 = "prod" ] ; then
+  echo "========= Run Production ========="
+  docker compose -f docker-compose.prod.yml up -d --build
+else
+  echo "========= Run Local ========="
+  sudo docker-compose up -d --build
+
+fi

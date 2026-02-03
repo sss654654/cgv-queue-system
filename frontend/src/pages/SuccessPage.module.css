@@ -1,0 +1,334 @@
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.successCard {
+  background: white;
+  border-radius: 20px;
+  padding: 40px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+  text-align: center;
+  animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.successIcon {
+  margin-bottom: 20px;
+}
+
+.checkmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  border-radius: 50%;
+  font-size: 2.5rem;
+  font-weight: bold;
+  animation: bounceIn 0.8s ease-out 0.2s both;
+}
+
+@keyframes bounceIn {
+  0%, 20%, 40%, 60%, 80% {
+    animation-timing-function: cubic-bezier(0.215, 0.610, 0.355, 1.000);
+  }
+  0% {
+    opacity: 0;
+    transform: scale3d(.3, .3, .3);
+  }
+  20% {
+    transform: scale3d(1.1, 1.1, 1.1);
+  }
+  40% {
+    transform: scale3d(.9, .9, .9);
+  }
+  60% {
+    opacity: 1;
+    transform: scale3d(1.03, 1.03, 1.03);
+  }
+  80% {
+    transform: scale3d(.97, .97, .97);
+  }
+  100% {
+    opacity: 1;
+    transform: scale3d(1, 1, 1);
+  }
+}
+
+.successCard h1 {
+  color: #333;
+  font-size: 2.2rem;
+  margin: 20px 0 10px 0;
+}
+
+.subtitle {
+  color: #666;
+  font-size: 1.1rem;
+  margin-bottom: 30px;
+}
+
+.bookingDetails {
+  display: grid;
+  gap: 30px;
+  margin-bottom: 30px;
+}
+
+.ticketInfo h2 {
+  color: #e60012;
+  margin: 0 0 20px 0;
+  font-size: 1.5rem;
+}
+
+.infoGrid {
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.infoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.infoItem:last-child {
+  border-bottom: none;
+}
+
+.label {
+  color: #666;
+  font-size: 1rem;
+}
+
+.value {
+  color: #333;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.qrCode {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: #f8f8f8;
+  border-radius: 12px;
+}
+
+.qrPlaceholder {
+  width: 150px;
+  height: 150px;
+  background: white;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.qrPattern {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 1px;
+  width: 120px;
+  height: 120px;
+}
+
+.qrRow {
+  display: contents;
+}
+
+.qrDot {
+  width: 12px;
+  height: 12px;
+  background: #f0f0f0;
+}
+
+.qrDot.filled {
+  background: #333;
+}
+
+.qrCode p {
+  color: #666;
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.historyButton,
+.newBookingButton {
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  text-align: center;
+  min-width: 160px;
+}
+
+.historyButton {
+  background: white;
+  color: #e60012;
+  border: 2px solid #e60012;
+}
+
+.historyButton:hover {
+  background: #e60012;
+  color: white;
+  transform: translateY(-2px);
+}
+
+.newBookingButton {
+  background: linear-gradient(45deg, #e60012, #ff3333);
+  color: white;
+  border: none;
+}
+
+.newBookingButton:hover {
+  background: linear-gradient(45deg, #cc0010, #e60012);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(230, 0, 18, 0.3);
+}
+
+.notice {
+  text-align: left;
+  background: #f0f8ff;
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid #e60012;
+}
+
+.notice h3 {
+  margin: 0 0 15px 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.notice ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #666;
+  line-height: 1.6;
+}
+
+.notice li {
+  margin-bottom: 8px;
+}
+
+.error {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.error h1 {
+  color: #e60012;
+  margin-bottom: 20px;
+}
+
+.homeButton {
+  display: inline-block;
+  background: linear-gradient(45deg, #e60012, #ff3333);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.homeButton:hover {
+  background: linear-gradient(45deg, #cc0010, #e60012);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .successCard {
+    padding: 30px 20px;
+  }
+  
+  .successCard h1 {
+    font-size: 1.8rem;
+  }
+  
+  .checkmark {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+  
+  .bookingDetails {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  
+  .actions {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .historyButton,
+  .newBookingButton {
+    width: 100%;
+    max-width: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  .successCard {
+    padding: 25px 15px;
+  }
+  
+  .infoItem {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .value {
+    font-weight: normal;
+  }
+  
+  .qrPlaceholder {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .qrPattern {
+    width: 100px;
+    height: 100px;
+  }
+  
+  .qrDot {
+    width: 10px;
+    height: 10px;
+  }
+}

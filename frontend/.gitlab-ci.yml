@@ -1,0 +1,26 @@
+stages:
+    - build
+    - deploy
+
+build npm:
+    stage: build
+    image: node:22
+    script:
+        - npm install
+        - npm run build
+    artifacts:
+        paths:
+            - dist/
+        expire_in: 1 hour
+
+deploy to s3:
+    stage: deploy
+    image:
+        name: amazon/aws-cli
+        entrypoint: [""]
+    script:
+        - aws --version
+        - ls -al
+        - aws s3 sync dist s3://$S3_BUCKET
+    dependencies:
+        - build npm

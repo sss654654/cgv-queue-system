@@ -1,0 +1,74 @@
+image:
+  repository: "732739477448.dkr.ecr.ap-northeast-2.amazonaws.com/dev-gitlab-repo"
+  tag: "1.0.0-250819-100716"
+  pullPolicy: Always
+
+namespace: cgv-api
+replicaCount: 4
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "2Gi"
+    cpu: "1500m"
+
+ingress:
+  host: "dev.api.peacemaker.kr"
+
+# ★★★ RBAC 설정 추가 ★★★
+rbac:
+  create: true                # RBAC 리소스 생성 여부
+  rules:
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "watch", "list"]
+
+config:
+  # ===== RDS Aurora/MySQL ===== #
+   # ★★★ 기존 설정 ★★★
+  username: "admin"
+  database: "cgv"
+  writeUrl: "iamroot-cgv-db-cluster.cluster-cfucw40ewjht.ap-northeast-2.rds.amazonaws.com"
+  writePort: "3306"
+  readUrl: "iamroot-cgv-db-cluster.cluster-ro-cfucw40ewjht.ap-northeast-2.rds.amazonaws.com"
+  readPort: "3306"
+  
+  redisHost: "cgv-redis-cluster-gfbhur.serverless.apn2.cache.amazonaws.com"
+  redisPort: "6379"
+
+  
+  # ===== Kinesis ===== #
+  kinesisStreamName: "cgv-admissions-stream"
+  maxActiveSessions: "2"
+  sessionTimeoutSeconds: "30"
+  
+  # ★★★ 동적 스케일링 설정 ★★★
+  baseSessionsPerPod: "2"
+  maxTotalSessions: "50"
+  enableDynamicScaling: "true"
+  fallbackPodCount: "4"
+  kubernetesNamespace: "cgv-api"
+  enableK8sDiscovery: "true"
+
+secret:
+  password: "iamroot123"
+
+hpa:
+  enabled: true
+  minReplicas: 4
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      percentPolicy: 100
+      podsPolicy: 3
+      periodSeconds: 10
+    scaleDown:
+      stabilizationWindowSeconds: 60
+      percentPolicy: 20
+      podsPolicy: 1
+      periodSeconds: 30

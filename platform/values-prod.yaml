@@ -1,0 +1,71 @@
+image:
+  repository: "732739477448.dkr.ecr.ap-northeast-2.amazonaws.com/prod-cgv-api"
+  tag: "v1.1.5"
+  pullPolicy: IfNotPresent
+
+namespace: prod-app
+
+replicaCount: 3
+
+resources:
+  requests:
+    memory: "500Mi"
+    cpu: "500m"
+  limits:
+    memory: "1Gi"
+    cpu: "1000m"
+
+ingress:
+  host: "api.peacemaker.kr"
+
+config:
+  username: "prod-admin"
+  database: "cgv-prod"
+  writeUrl: "prod-db-writer.cgv.com"
+  writePort: "3306"
+  readUrl: "prod-db-reader.cgv.com"
+  readPort: "3306"
+
+secret:
+  password: ""
+
+probes:
+  startupProbe:
+    enabled: true
+    httpGet:
+      path: "/health/ready"
+      port: 8080
+    periodSeconds: 10
+    failureThreshold: 30
+  livenessProbe:
+    enabled: true
+    httpGet:
+      path: "/health/live"
+      port: 8080
+    periodSeconds: 30
+    failureThreshold: 3
+  readinessProbe:
+    enabled: true
+    httpGet:
+      path: "/health/ready"
+      port: 8080
+    periodSeconds: 10
+    failureThreshold: 3
+
+hpa:
+  enabled: true
+  minReplicas: 5
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 60
+  targetMemoryUtilizationPercentage: 60
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      percentPolicy: 100
+      podsPolicy: 3
+      periodSeconds: 30
+    scaleDown:
+      stabilizationWindowSeconds: 60 # n초간 지표에서 최댓값을 기준으로 판단
+      percentPolicy: 20
+      podsPolicy: 1
+      periodSeconds: 30

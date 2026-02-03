@@ -1,0 +1,322 @@
+/* src/pages/WaitPage.module.css - 기존 디자인 유지 + 새 요소들 */
+
+.container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.content {
+    background: white;
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+}
+
+.content h1 {
+    font-size: 1.8rem;
+    color: #333;
+    margin-bottom: 24px;
+    font-weight: 700;
+}
+
+/* 📋 상태 카드 */
+.statusCard {
+    background: #f8fafc;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid #e2e8f0;
+}
+
+.statusMessage {
+    color: #475569;
+    font-size: 1.1rem;
+    margin: 0 0 12px 0;
+    font-weight: 500;
+}
+
+/* ✅ 새로 추가: 연결 정보 */
+.connectionInfo {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9rem;
+    margin-top: 12px;
+}
+
+.statusConnected {
+    color: #10b981;
+    font-weight: 600;
+}
+
+.statusDisconnected {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.statusError {
+    color: #ef4444;
+    font-weight: 600;
+}
+
+.statusConnecting {
+    color: #6b7280;
+    font-weight: 600;
+}
+
+.lastUpdate {
+    color: #6b7280;
+    font-size: 0.8rem;
+}
+
+/* 🎉 입장 허가 카드 */
+.admittedCard {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 20px;
+    animation: celebrationPulse 0.6s ease-in-out;
+}
+
+.admittedIcon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+}
+
+.admittedCard h2 {
+    font-size: 1.5rem;
+    margin: 0 0 8px 0;
+    font-weight: 700;
+}
+
+.admittedCard p {
+    margin: 0;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+@keyframes celebrationPulse {
+    0% { transform: scale(0.95); opacity: 0.8; }
+    50% { transform: scale(1.02); opacity: 1; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+/* 📊 대기열 정보 */
+.queueInfo {
+    margin-bottom: 30px;
+}
+
+.position {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.positionNumber {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #667eea;
+    line-height: 1;
+}
+
+.positionLabel {
+    font-size: 1.2rem;
+    color: #64748b;
+    font-weight: 600;
+}
+
+.totalWaiting {
+    color: #64748b;
+    font-size: 1rem;
+    font-weight: 500;
+    margin: 0 0 20px 0;
+}
+
+/* ✅ 새로 추가: 진행률 바 */
+.progressContainer {
+    margin: 20px 0;
+}
+
+.progressBar {
+    background: #e2e8f0;
+    border-radius: 10px;
+    height: 8px;
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.progressFill {
+    background: linear-gradient(90deg, #667eea, #764ba2);
+    height: 100%;
+    border-radius: 10px;
+    transition: width 0.5s ease-in-out;
+}
+
+.progressText {
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0;
+}
+
+/* ⏰ 예상 시간 */
+.estimatedTime {
+    color: #64748b;
+    font-size: 1rem;
+    margin: 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.timeIcon {
+    font-size: 1.1rem;
+}
+
+.estimatedTime strong {
+    color: #2563eb;
+    font-weight: 700;
+}
+
+/* 🔧 시스템 정보 */
+.systemInfo {
+    background: #f1f5f9;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 20px 0;
+    border: 1px solid #e2e8f0;
+}
+
+.systemInfo summary {
+    color: #64748b;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+}
+
+.systemInfo summary:hover {
+    color: #475569;
+}
+
+.systemDetails {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #cbd5e1;
+    text-align: left;
+}
+
+.systemDetails div {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-bottom: 4px;
+}
+
+/* ✅ 새로 추가: 설정 로딩 */
+.configLoading {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin: 12px 0;
+}
+
+/* 🚪 액션 버튼들 */
+.actionButtons {
+    margin-top: 25px;
+}
+
+.leaveButton {
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    padding: 12px 24px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    min-width: 160px;
+}
+
+.leaveButton:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.leaveButton:active {
+    transform: translateY(0);
+}
+
+/* ✅ 새로 추가: 개발자 디버그 정보 */
+.debugInfo {
+    background: #1f2937;
+    color: #e5e7eb;
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 20px;
+    font-family: 'Courier New', monospace;
+}
+
+.debugInfo summary {
+    color: #9ca3af;
+    font-size: 0.8rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+.debugDetails {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid #374151;
+    text-align: left;
+}
+
+.debugDetails div {
+    color: #d1d5db;
+    font-size: 0.75rem;
+    margin-bottom: 3px;
+}
+
+.debugDetails strong {
+    color: #f3f4f6;
+}
+
+/* 📱 반응형 디자인 */
+@media (max-width: 640px) {
+    .container {
+        padding: 16px;
+    }
+    
+    .content {
+        padding: 30px 20px;
+    }
+    
+    .content h1 {
+        font-size: 1.5rem;
+    }
+    
+    .positionNumber {
+        font-size: 2.8rem;
+    }
+    
+    .connectionInfo {
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+    }
+}

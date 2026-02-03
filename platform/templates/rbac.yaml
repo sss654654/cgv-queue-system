@@ -1,0 +1,35 @@
+{{- if .Values.rbac.create }}
+# ★★★ Role - Pod 조회 권한 ★★★
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: {{ .Values.namespace }}
+  name: {{ include "cgv-api.fullname" . }}-pod-reader
+  labels:
+    {{- include "cgv-api.labels" . | nindent 4 }}
+rules:
+{{- range .Values.rbac.rules }}
+- apiGroups: {{ .apiGroups | toJson }}
+  resources: {{ .resources | toJson }}
+  verbs: {{ .verbs | toJson }}
+{{- end }}
+
+---
+
+# ★★★ RoleBinding - ServiceAccount에 권한 부여 ★★★
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: {{ include "cgv-api.fullname" . }}-read-pods
+  namespace: {{ .Values.namespace }}
+  labels:
+    {{- include "cgv-api.labels" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ include "cgv-api.fullname" . }}
+  namespace: {{ .Values.namespace }}
+roleRef:
+  kind: Role
+  name: {{ include "cgv-api.fullname" . }}-pod-reader
+  apiGroup: rbac.authorization.k8s.io
+{{- end }}
