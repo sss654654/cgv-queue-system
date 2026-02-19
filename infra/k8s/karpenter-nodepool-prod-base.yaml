@@ -1,0 +1,43 @@
+# =============================================================================
+# NodePool: prod-base (On-Demand, weight 10)
+# prod cgv-api 기본 보장 Pod 전용
+# On-Demand + 높은 weight: Spot-free 기본 용량, 우선 스케줄링
+# =============================================================================
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: prod-base
+spec:
+  weight: 10 # prod-burst(1)보다 우선 스케줄링
+
+  template:
+    metadata:
+      labels:
+        env: prod
+        capacity: base
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["t3.medium"] # 2 vCPU, 4GB
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["ap-northeast-2a", "ap-northeast-2c"]
+      taints:
+        - key: env
+          value: prod
+          effect: NoSchedule
+      nodeClassRef:
+        name: default
+
+  limits:
+    cpu: "4"
+    memory: 16Gi
+
+  disruption:
+    consolidationPolicy: WhenEmpty      # 보수적: 빈 노드만 정리
+    consolidateAfter: 60s               # 60초 대기 후 정리
+    expireAfter: 720h

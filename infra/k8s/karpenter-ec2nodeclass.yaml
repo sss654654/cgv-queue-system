@@ -1,0 +1,40 @@
+# =============================================================================
+# EC2NodeClass — 모든 NodePool이 공유하는 EC2 인스턴스 설정
+# Subnet/SG는 karpenter.sh/discovery 태그로 자동 탐색
+# =============================================================================
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+spec:
+  # cgv-vpc App Private Subnet (karpenter.sh/discovery: cgv-cluster 태그)
+  subnetSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "cgv-cluster"
+
+  # cgv-security Node SG (karpenter.sh/discovery: cgv-cluster 태그)
+  securityGroupSelectorTerms:
+    - tags:
+        karpenter.sh/discovery: "cgv-cluster"
+
+  amiFamily: AL2 # EKS 최적화 Amazon Linux 2
+
+  blockDeviceMappings:
+    - deviceName: /dev/xvda
+      ebs:
+        volumeSize: 30Gi
+        volumeType: gp3
+        deleteOnTermination: true
+
+  # cgv-eks에서 생성한 Node IAM Role
+  role: "cgv-eks-node-role"
+
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2  # IRSA 토큰 접근에 필요
+    httpTokens: required        # IMDSv2 강제 (보안)
+
+  tags:
+    Project: "cgv"
+    ManagedBy: "karpenter"

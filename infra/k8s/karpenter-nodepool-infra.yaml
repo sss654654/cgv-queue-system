@@ -1,0 +1,39 @@
+# =============================================================================
+# NodePool: infra (On-Demand)
+# KEDA, ArgoCD, GitLab Runner, Prometheus, Grafana 전용
+# On-Demand: 피크 트래픽 시 Spot 회수로 모니터링/스케일링 장애 방지
+# =============================================================================
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: infra
+spec:
+  template:
+    metadata:
+      labels:
+        role: infra
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand"]
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values: ["t3.large"] # 2 vCPU, 8GB
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["ap-northeast-2a", "ap-northeast-2c"]
+      taints:
+        - key: role
+          value: infra
+          effect: NoSchedule
+      nodeClassRef:
+        name: default
+
+  limits:
+    cpu: "16"
+    memory: 64Gi
+
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    expireAfter: 720h # 30일

@@ -1,0 +1,50 @@
+# =============================================================================
+# NodePool: prod-burst (Spot, weight 1)
+# prod cgv-api 버스트 스케일링 전용
+# Spot 8종: 다양한 인스턴스 풀로 Spot 확보 확률 극대화 (70% 비용 절감)
+# =============================================================================
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: prod-burst
+spec:
+  weight: 1 # prod-base(10) limits 초과 시에만 사용
+
+  template:
+    metadata:
+      labels:
+        env: prod
+        capacity: burst
+    spec:
+      requirements:
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["spot"]
+        - key: node.kubernetes.io/instance-type
+          operator: In
+          values:
+            - "t3.medium"   # 2 vCPU, 4GB  (Intel)
+            - "t3a.medium"  # 2 vCPU, 4GB  (AMD, ~10% 저렴)
+            - "t3.large"    # 2 vCPU, 8GB  (Intel)
+            - "t3a.large"   # 2 vCPU, 8GB  (AMD)
+            - "m5.large"    # 2 vCPU, 8GB  (범용)
+            - "m5a.large"   # 2 vCPU, 8GB  (AMD 범용)
+            - "c5.large"    # 2 vCPU, 4GB  (컴퓨팅 최적화)
+            - "c5a.large"   # 2 vCPU, 4GB  (AMD 컴퓨팅)
+        - key: topology.kubernetes.io/zone
+          operator: In
+          values: ["ap-northeast-2a", "ap-northeast-2c"]
+      taints:
+        - key: env
+          value: prod
+          effect: NoSchedule
+      nodeClassRef:
+        name: default
+
+  limits:
+    cpu: "40"
+    memory: 160Gi
+
+  disruption:
+    consolidationPolicy: WhenUnderutilized
+    expireAfter: 720h

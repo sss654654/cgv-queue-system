@@ -1,0 +1,51 @@
+# =============================================================================
+# Redis Dev Pod (ElastiCache 대안)
+# Prod: ElastiCache cache.t3.small Multi-AZ ($1.63/day)
+# Dev: Redis Pod (비용 $0, Spot 노드에서 실행)
+# =============================================================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: cgv-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      tolerations:
+        - key: env
+          value: dev
+          effect: NoSchedule
+      nodeSelector:
+        env: dev
+      containers:
+        - name: redis
+          image: redis:7-alpine
+          ports:
+            - containerPort: 6379
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: cgv-dev
+spec:
+  selector:
+    app: redis
+  ports:
+    - port: 6379
+      targetPort: 6379
+  type: ClusterIP
