@@ -1,4 +1,3 @@
-// src/main/java/com/example/admission/ws/WebSocketUpdateService.java
 package com.example.admission.ws;
 
 import org.slf4j.Logger;
@@ -9,6 +8,21 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Legacy direct WebSocket notification service (single-pod only).
+ *
+ * In multi-pod deployment, use {@link WebSocketBroadcastService} (Redis Pub/Sub) instead.
+ * This class sends messages directly via SimpMessagingTemplate, which only reaches
+ * clients connected to the current pod. It is retained for:
+ *   - Single-pod local development and testing
+ *   - Fallback when Redis Pub/Sub is unavailable
+ *
+ * <p>Production callers (QueueProcessor, SessionTimeoutProcessor, RealtimeStatsBroadcaster)
+ * should inject WebSocketBroadcastService, NOT this class.</p>
+ *
+ * @see WebSocketBroadcastService
+ * @see WebSocketBroadcastListener
+ */
 @Service
 public class WebSocketUpdateService {
 
