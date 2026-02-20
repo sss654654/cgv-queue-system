@@ -1,10 +1,11 @@
 # =============================================================================
-# IRSA (IAM Roles for Service Accounts) — 5개 역할
+# IRSA (IAM Roles for Service Accounts) — 6개 역할
 # 1. Monitoring (CloudWatch)
 # 2. Karpenter (EC2 노드 프로비저닝)
 # 3. ALB Controller (ALB 자동 생성)
 # 4. KEDA (주석 처리 — Prometheus trigger 사용 중)
 # 5. GitLab Runner (ECR Push + S3 Cache)
+# 6. External Secrets Operator (ASM 읽기)
 # =============================================================================
 
 # =============================================================================
@@ -245,6 +246,54 @@ resource "aws_iam_role_policy" "gitlab_runner" {
         Resource = [
           "arn:aws:s3:::cgv-ci-cache-${data.aws_caller_identity.current.account_id}",
           "arn:aws:s3:::cgv-ci-cache-${data.aws_caller_identity.current.account_id}/*"
+        ]
+      }
+    ]
+  })
+}
+
+# =============================================================================
+# 6. External Secrets Operator IRSA Role (ASM 읽기)
+# ESO가 AWS Secrets Manager에서 Secret을 읽어 K8s Secret으로 동기화한다.
+# 2.3에서 ESO Helm 설치 시 이 Role ARN을 ServiceAccount annotation에 설정.
+# SecretStore CRD의 serviceAccountRef.name = "cgv-api-sa" (→ 2.3 섹션 8.2)
+# =============================================================================
+resource "aws_iam_role" "external_secrets" {
+  name = "cgv-external-secrets-irsa-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = { Federated = local.oidc_provider_arn }
+      Action = "sts:AssumeRoleWithWebIdentity"
+      Condition = {
+        StringEquals = {
+          "${local.oidc_provider_url}:sub" = "system:serviceaccount:cgv-prod:cgv-api-sa"
+          "${local.oidc_provider_url}:aud" = "sts.amazonaws.com"
+        }
+      }
+    }]
+  })
+
+  tags = { Name = "cgv-external-secrets-irsa-role" }
+}
+
+resource "aws_iam_role_policy" "external_secrets" {
+  name = "cgv-external-secrets-asm-policy"
+  role = aws_iam_role.external_secrets.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ]
+        Resource = [
+          "arn:aws:secretsmanager:ap-northeast-2:${data.aws_caller_identity.current.account_id}:secret:cgv/*"
         ]
       }
     ]

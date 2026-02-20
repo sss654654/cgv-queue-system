@@ -27,3 +27,8 @@ output "node_role_arn" {
   description = "Node IAM Role ARN (Karpenter EC2NodeClass에서 참조)"
   value       = aws_iam_role.eks_node.arn
 }
+
+output "external_secrets_role_arn" {
+  description = "ESO IRSA Role ARN (→ 2.3 SecretStore ServiceAccount annotation)"
+  value       = aws_iam_role.external_secrets.arn
+}

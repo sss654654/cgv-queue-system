@@ -85,6 +85,10 @@ resource "aws_eks_node_group" "system" {
     max_size     = 3             # 롤링 업데이트 시 여유
   }
 
+  update_config {
+    max_unavailable = 1          # 롤링 업데이트 시 동시 교체 1대로 제한 (CoreDNS HA 유지)
+  }
+
   labels = {
     "node-role" = "system"       # kubectl get nodes에서 역할 확인용
   }
