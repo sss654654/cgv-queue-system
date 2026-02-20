@@ -1,103 +1,18 @@
 package com.example.config;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
-import software.amazon.awssdk.auth.credentials.DefaultCredentialsProvider;
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
-import software.amazon.awssdk.core.client.config.ClientOverrideConfiguration;
-import software.amazon.awssdk.core.retry.RetryPolicy;
-import software.amazon.awssdk.http.nio.netty.NettyNioAsyncHttpClient;
-import software.amazon.awssdk.regions.Region;
-import software.amazon.awssdk.services.kinesis.KinesisClient;
-import software.amazon.awssdk.services.kinesis.KinesisAsyncClient;
 
-import java.net.URI;
-import java.time.Duration;
-
+/**
+ * AwsConfig - AWS SDK 설정
+ *
+ * Kinesis 제거 완료 (Round 10): 이벤트 스트리밍은 Redis Pub/Sub로 대체.
+ * 현재 AWS SDK 의존성이 불필요하여 빈 설정만 유지한다.
+ *
+ * 향후 S3 (이미지 업로드 등) 필요 시 여기에 S3Client Bean을 추가한다.
+ * IRSA 자격증명은 EKS Pod에 자동 주입되므로 별도 설정 불필요.
+ */
 @Configuration
 public class AwsConfig {
-    
-    /**
-     * 운영환경용 Kinesis 클라이언트 (IRSA 사용)
-     */
-    @Bean
-    @Profile("!local")
-    public KinesisClient kinesisClient() {
-        return KinesisClient.builder()
-                .region(Region.AP_NORTHEAST_2)
-                .credentialsProvider(DefaultCredentialsProvider.create()) // IRSA 지원
-                .overrideConfiguration(ClientOverrideConfiguration.builder()
-                    .retryPolicy(RetryPolicy.builder()
-                        .numRetries(3)
-                        .build())
-                    .apiCallTimeout(Duration.ofSeconds(30))
-                    .apiCallAttemptTimeout(Duration.ofSeconds(10))
-                    .build())
-                .build();
-    }
-    
-    /**
-     * 운영환경용 비동기 Kinesis 클라이언트 (고성능 처리용)
-     */
-    @Bean
-    @Profile("!local")
-    public KinesisAsyncClient kinesisAsyncClient() {
-        return KinesisAsyncClient.builder()
-                .region(Region.AP_NORTHEAST_2)
-                .credentialsProvider(DefaultCredentialsProvider.create())
-                .httpClient(NettyNioAsyncHttpClient.builder()
-                    .maxConcurrency(50)
-                    .maxPendingConnectionAcquires(1000)
-                    .connectionTimeout(Duration.ofSeconds(30))
-                    .connectionAcquisitionTimeout(Duration.ofSeconds(60))
-                    .readTimeout(Duration.ofSeconds(30))
-                    .writeTimeout(Duration.ofSeconds(30))
-                    .build())
-                .overrideConfiguration(ClientOverrideConfiguration.builder()
-                    .retryPolicy(RetryPolicy.builder()
-                        .numRetries(3)
-                        .build())
-                    .apiCallTimeout(Duration.ofSeconds(60))
-                    .apiCallAttemptTimeout(Duration.ofSeconds(30))
-                    .build())
-                .build();
-    }
-    
-    /**
-     * 로컬 개발환경용 Kinesis 클라이언트 (LocalStack 사용)
-     */
-    @Bean
-    @Profile("local")
-    public KinesisClient localKinesisClient() {
-        return KinesisClient.builder()
-                .region(Region.AP_NORTHEAST_2)
-                .endpointOverride(URI.create("http://localstack:4566"))
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
-                )
-                .overrideConfiguration(ClientOverrideConfiguration.builder()
-                    .retryPolicy(RetryPolicy.builder()
-                        .numRetries(2) // 로컬은 재시도 적게
-                        .build())
-                    .apiCallTimeout(Duration.ofSeconds(10))
-                    .build())
-                .build();
-    }
-    
-    /**
-     * 로컬 개발환경용 비동기 Kinesis 클라이언트
-     */
-    @Bean
-    @Profile("local")
-    public KinesisAsyncClient localKinesisAsyncClient() {
-        return KinesisAsyncClient.builder()
-                .region(Region.AP_NORTHEAST_2)
-                .endpointOverride(URI.create("http://localstack:4566"))
-                .credentialsProvider(
-                    StaticCredentialsProvider.create(AwsBasicCredentials.create("test", "test"))
-                )
-                .build();
-    }
+    // Kinesis 제거 후 빈 설정 유지
+    // AWS SDK BOM도 pom.xml에서 제거됨
 }

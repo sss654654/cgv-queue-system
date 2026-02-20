@@ -1,32 +1,46 @@
+# ===============================================================
+# CGV Backend Multi-stage Dockerfile
+# ===============================================================
+# Build: Maven + JDK 17
+# Runtime: JRE 17 only (minimal attack surface, ~60% smaller)
+# ---------------------------------------------------------------
+
 # 1. Build Stage
-FROM maven:3.9-eclipse-temurin-17 as builder
+FROM eclipse-temurin:17-jdk AS builder
 WORKDIR /app
+
+# Maven Wrapper + pom.xml 먼저 복사 (의존성 캐시 레이어)
+COPY mvnw .
+COPY .mvn .mvn
 COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
+RUN chmod +x mvnw && ./mvnw dependency:go-offline -B
 
-# 2. Runtime Stage with AWS CLI
-FROM eclipse-temurin:17-jre-jammy
+# 소스 복사 후 빌드
+COPY src ./src
+RUN ./mvnw package -DskipTests -B
+
+# 2. Runtime Stage (JRE only - no JDK, no AWS CLI)
+FROM eclipse-temurin:17-jre
 WORKDIR /app
 
-# ✅ AWS CLI v2 설치
-RUN apt-get update && \
-    apt-get install -y curl unzip && \
-    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
-    unzip awscliv2.zip && \
-    ./aws/install && \
-    rm -rf awscliv2.zip aws && \
-    apt-get remove -y curl unzip && \
-    apt-get autoremove -y && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+# Non-root user for security
+RUN groupadd -r appuser && useradd -r -g appuser appuser
 
-# JAR 파일 복사
+# JAR 복사
 COPY --from=builder /app/target/*.jar app.jar
 
-# 환경 변수
-ENV SPRING_PROFILES_ACTIVE=prod
-ENV AWS_REGION=ap-northeast-2
+# 소유권 설정
+RUN chown -R appuser:appuser /app
+USER appuser
+
+# Health check - K8s probe 외 Docker 자체 체크
+HEALTHCHECK --interval=10s --timeout=3s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health/live || exit 1
 
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar"]
+
+ENTRYPOINT ["java", \
+    "-XX:+UseG1GC", \
+    "-XX:MaxRAMPercentage=75.0", \
+    "-Djava.security.egd=file:/dev/./urandom", \
+    "-jar", "app.jar"]

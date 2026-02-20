@@ -26,113 +26,77 @@
         <sonar.projectName>cgv-api</sonar.projectName>
         <sonar.qualitygate.wait>true</sonar.qualitygate.wait>
         <sonar.java.binaries>target/classes/com/example</sonar.java.binaries>
-        <!-- AWS SDK Version -->
-        <aws.sdk.version>2.20.26</aws.sdk.version>
-        <!-- Fabric8 Kubernetes Client Version -->
-        <fabric8.version>6.9.2</fabric8.version>
     </properties>
 
-    <!-- AWS SDK BOM for version management -->
-    <dependencyManagement>
-        <dependencies>
-            <dependency>
-                <groupId>software.amazon.awssdk</groupId>
-                <artifactId>bom</artifactId>
-                <version>${aws.sdk.version}</version>
-                <type>pom</type>
-                <scope>import</scope>
-            </dependency>
-        </dependencies>
-    </dependencyManagement>
-
     <dependencies>
-        <!-- ========== Kubernetes Related Dependencies ========== -->
-        
-        <!-- ========== AWS Related Dependencies ========== -->
-        
-        <!-- Kinesis SDK -->
+        <!-- ========== Spring Boot Core ========== -->
+
+        <!-- Web Starter -->
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>kinesis</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-        
-        <!-- STS (for IRSA) -->
+
+        <!-- Data JPA -->
         <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>sts</artifactId>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        
-        <!-- HTTP Client (Netty) -->
-        <dependency>
-            <groupId>software.amazon.awssdk</groupId>
-            <artifactId>netty-nio-client</artifactId>
-        </dependency>
-        
-        <!-- Flyway (DB Migration) -->
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-core</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.flywaydb</groupId>
-            <artifactId>flyway-mysql</artifactId>
-        </dependency>
-        
-        <!-- ========== Spring Boot Basic Dependencies ========== -->
-        <dependency>
-            <groupId>io.kubernetes</groupId>
-            <artifactId>client-java</artifactId>
-            <version>22.0.0</version>
-        </dependency>
+
         <!-- Redis -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
         </dependency>
-        
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-                
-        <!-- WebSocket -->
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-websocket</artifactId>
-        </dependency>
-        
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-messaging</artifactId>
-        </dependency>
-        
-        <!-- Spring Boot Web Starter -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-web</artifactId>
-        </dependency>
-        
-        <!-- Spring Boot Data JPA -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-data-jpa</artifactId>
-        </dependency>
-        
-        <!-- Spring Boot Validation -->
+
+        <!-- Validation (@Valid, @NotBlank 등) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-validation</artifactId>
         </dependency>
-        
-        <!-- Spring Boot Actuator (Health Check) -->
+
+        <!-- Actuator (Health Check + /actuator/prometheus) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        
+
+        <!-- WebSocket (STOMP) -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-websocket</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-messaging</artifactId>
+        </dependency>
+
+        <!-- ========== Monitoring ========== -->
+
+        <!-- Micrometer Prometheus Registry (KEDA ScaledObject trigger) -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
+
+        <!-- Logstash Logback Encoder (prod JSON structured logging for Loki) -->
+        <dependency>
+            <groupId>net.logstash.logback</groupId>
+            <artifactId>logstash-logback-encoder</artifactId>
+            <version>7.4</version>
+        </dependency>
+
+        <!-- ========== Kubernetes ========== -->
+
+        <dependency>
+            <groupId>io.kubernetes</groupId>
+            <artifactId>client-java</artifactId>
+            <version>22.0.0</version>
+        </dependency>
+
+        <!-- ========== Database ========== -->
+
         <!-- MySQL Driver -->
         <dependency>
             <groupId>mysql</groupId>
@@ -140,22 +104,43 @@
             <version>8.0.33</version>
             <scope>runtime</scope>
         </dependency>
-        
+
+        <!-- Flyway (DB Migration) -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+        </dependency>
+
         <!-- H2 Database (for testing) -->
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
         </dependency>
-        
+
+        <!-- ========== Utility ========== -->
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- SpringDoc OpenAPI (Swagger) -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>2.2.0</version>
         </dependency>
-        
-        <!-- Test Dependencies -->
+
+        <!-- ========== Test ========== -->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
