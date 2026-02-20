@@ -37,3 +37,13 @@ output "vpc_endpoint_sg_id" {
   description = "VPC Endpoint Security Group ID"
   value       = aws_security_group.vpc_endpoint.id
 }
+
+output "nat_gateway_a_id" {
+  description = "NAT Gateway AZ-a ID (→ cgv-monitoring CloudWatch Alarm)"
+  value       = aws_nat_gateway.a.id
+}
+
+output "nat_gateway_c_id" {
+  description = "NAT Gateway AZ-c ID (→ cgv-monitoring CloudWatch Alarm)"
+  value       = aws_nat_gateway.c.id
+}

@@ -1,7 +1,7 @@
 # =============================================================================
 # VPC Endpoints
-# S3 Gateway (무료) + ECR API (Interface) + ECR DKR (Interface)
-# ECR Pull/Push 트래픽이 NAT Gateway를 거치지 않도록 비용 절감
+# S3 Gateway (무료) + ECR API/DKR + Secrets Manager + STS (Interface)
+# ECR Pull/Push + ASM + IRSA(STS) 트래픽이 NAT Gateway를 거치지 않도록 비용 절감
 # =============================================================================
 
 # =============================================================================
@@ -89,4 +89,36 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
   security_group_ids = [aws_security_group.vpc_endpoint.id]
 
   tags = { Name = "cgv-ecr-dkr-endpoint" }
+}
+
+# --- Secrets Manager Interface Endpoint ($0.01/hr) ---
+# ESO(External Secrets Operator)가 ASM에서 Secret을 읽을 때 사용
+# NAT Gateway 대신 VPC 내부 경로로 접근 → 비용 절감 + 보안 강화
+# ECR과 동일하게 AZ-a만 배치 (비용 최적화)
+resource "aws_vpc_endpoint" "secretsmanager" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.ap-northeast-2.secretsmanager"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [aws_subnet.app_private_a.id]
+  security_group_ids = [aws_security_group.vpc_endpoint.id]
+
+  tags = { Name = "cgv-secretsmanager-endpoint" }
+}
+
+# --- STS Interface Endpoint ($0.01/hr) ---
+# IRSA(IAM Roles for Service Accounts)가 STS AssumeRoleWithWebIdentity를 호출할 때 사용
+# 모든 IRSA Role(6개)의 토큰 발급이 이 Endpoint를 통과한다.
+# NAT Gateway 대신 VPC 내부 경로 → 보안 강화 + 비용 절감
+resource "aws_vpc_endpoint" "sts" {
+  vpc_id              = aws_vpc.main.id
+  service_name        = "com.amazonaws.ap-northeast-2.sts"
+  vpc_endpoint_type   = "Interface"
+  private_dns_enabled = true
+
+  subnet_ids         = [aws_subnet.app_private_a.id]
+  security_group_ids = [aws_security_group.vpc_endpoint.id]
+
+  tags = { Name = "cgv-sts-endpoint" }
 }

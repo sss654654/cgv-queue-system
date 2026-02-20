@@ -263,6 +263,14 @@ resource "aws_s3_bucket" "flow_logs" {
   tags   = { Name = "cgv-vpc-flow-logs", Project = "cgv" }
 }
 
+resource "aws_s3_bucket_public_access_block" "flow_logs" {
+  bucket                  = aws_s3_bucket.flow_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
+}
+
 resource "aws_s3_bucket_lifecycle_configuration" "flow_logs" {
   bucket = aws_s3_bucket.flow_logs.id
   rule {
@@ -281,6 +289,7 @@ resource "aws_cloudtrail" "cgv" {
   include_global_service_events = true
   is_multi_region_trail         = false
   enable_logging                = true
+  enable_log_file_validation    = true   # CloudTrail 로그 무결성 검증
   tags = { Name = "cgv-cloudtrail", Project = "cgv" }
 
   # Bucket Policy가 먼저 적용되어야 CloudTrail이 S3에 쓸 수 있음
@@ -290,6 +299,14 @@ resource "aws_cloudtrail" "cgv" {
 resource "aws_s3_bucket" "cloudtrail" {
   bucket = "cgv-cloudtrail-${data.aws_caller_identity.current.account_id}"
   tags   = { Name = "cgv-cloudtrail", Project = "cgv" }
+}
+
+resource "aws_s3_bucket_public_access_block" "cloudtrail" {
+  bucket                  = aws_s3_bucket.cloudtrail.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 resource "aws_s3_bucket_policy" "cloudtrail" {

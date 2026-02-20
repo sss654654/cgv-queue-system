@@ -7,4 +7,5 @@ variable "cluster_name" {
 variable "alert_email" {
   description = "Budget alarm notification email"
   type        = string
+  default     = ""
 }
