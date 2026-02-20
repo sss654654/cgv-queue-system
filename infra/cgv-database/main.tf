@@ -188,7 +188,8 @@ resource "aws_elasticache_replication_group" "redis" {
   security_group_ids = [data.terraform_remote_state.security.outputs.elasticache_sg_id]
   parameter_group_name = aws_elasticache_parameter_group.redis[0].name
 
-  transit_encryption_enabled = true                  # TLS in-transit (→ 2.1 섹션 10.18)
+  transit_encryption_enabled  = true                  # TLS in-transit (→ 2.1 섹션 10.18)
+  at_rest_encryption_enabled = true                   # at-rest 암호화 (RDS storage_encrypted과 일관성)
   auth_token                 = var.redis_auth_token   # Redis AUTH (→ 2.1 섹션 10.18)
 
   snapshot_retention_limit = 1
@@ -199,4 +200,49 @@ resource "aws_elasticache_replication_group" "redis" {
     Name        = "cgv-redis-prod"
     Environment = "prod"
   }
+}
+
+# =============================================================================
+# 3. AWS Secrets Manager (ASM)
+# RDS/Redis 비밀번호를 ASM에 저장 → 2.3에서 ESO(External Secrets Operator)가 읽어서
+# K8s Secret으로 동기화한다. Terraform이 생성한 비밀번호를 직접 넣으므로
+# 수동 등록 오타/불일치가 원천 차단된다.
+# =============================================================================
+
+# --- DB Credentials ---
+resource "aws_secretsmanager_secret" "db_credentials" {
+  name        = "cgv/prod/database"
+  description = "CGV RDS MySQL credentials — ESO ExternalSecret이 참조"
+
+  tags = { Name = "cgv-db-credentials" }
+}
+
+resource "aws_secretsmanager_secret_version" "db_credentials" {
+  secret_id = aws_secretsmanager_secret.db_credentials.id
+
+  secret_string = jsonencode({
+    username = "admin"
+    password = var.db_password
+    host     = aws_db_instance.mysql.address
+    port     = tostring(aws_db_instance.mysql.port)
+    dbname   = "cgv_dev"
+  })
+}
+
+# --- Redis Credentials ---
+resource "aws_secretsmanager_secret" "redis_credentials" {
+  name        = "cgv/prod/redis"
+  description = "CGV ElastiCache Redis AUTH token — ESO ExternalSecret이 참조"
+
+  tags = { Name = "cgv-redis-credentials" }
+}
+
+resource "aws_secretsmanager_secret_version" "redis_credentials" {
+  secret_id = aws_secretsmanager_secret.redis_credentials.id
+
+  secret_string = jsonencode({
+    auth_token = var.redis_auth_token
+    host       = try(aws_elasticache_replication_group.redis[0].primary_endpoint_address, "redis.cgv-dev.svc.cluster.local")
+    port       = "6379"
+  })
 }

@@ -24,3 +24,14 @@ output "redis_port" {
   description = "ElastiCache Redis port"
   value       = try(aws_elasticache_replication_group.redis[0].port, 6379)
 }
+
+# --- Secrets Manager ---
+output "db_secret_arn" {
+  description = "ASM DB credentials secret ARN (→ 2.3 ESO SecretStore에서 참조)"
+  value       = aws_secretsmanager_secret.db_credentials.arn
+}
+
+output "redis_secret_arn" {
+  description = "ASM Redis credentials secret ARN (→ 2.3 ESO SecretStore에서 참조)"
+  value       = aws_secretsmanager_secret.redis_credentials.arn
+}
