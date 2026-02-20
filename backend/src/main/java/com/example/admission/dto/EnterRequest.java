@@ -1,48 +1,40 @@
 package com.example.admission.dto;
 
+import jakarta.validation.constraints.NotBlank;
+
 public class EnterRequest {
+
+    @NotBlank(message = "movieId is required")
     private String movieId;
-    private String sessionId;
+
+    @NotBlank(message = "requestId is required")
     private String requestId;
 
     // 기본 생성자
     public EnterRequest() {}
 
     // 생성자
-    public EnterRequest(String movieId, String sessionId, String requestId) {
+    public EnterRequest(String movieId, String requestId) {
         this.movieId = movieId;
-        this.sessionId = sessionId;
         this.requestId = requestId;
     }
 
-    // Record 스타일 메서드들 (컴파일 에러 해결)
+    // Record 스타일 메서드들 (기존 코드 호환)
     public String movieId() {
         return movieId;
-    }
-
-    public String sessionId() {
-        return sessionId;
     }
 
     public String requestId() {
         return requestId;
     }
 
-    // 일반적인 getter 메서드들
+    // Getter / Setter
     public String getMovieId() {
         return movieId;
     }
 
     public void setMovieId(String movieId) {
         this.movieId = movieId;
-    }
-
-    public String getSessionId() {
-        return sessionId;
-    }
-
-    public void setSessionId(String sessionId) {
-        this.sessionId = sessionId;
     }
 
     public String getRequestId() {

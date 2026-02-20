@@ -1,5 +1,5 @@
 -- KEYS[1]: active ZSET, KEYS[2]: waiting ZSET
--- ARGV[1]: maxActive, ARGV[2]: member "requestId:sessionId", ARGV[3]: now
+-- ARGV[1]: maxActive, ARGV[2]: member (requestId), ARGV[3]: now
 local activeKey  = KEYS[1]
 local waitingKey = KEYS[2]
 local maxActive  = tonumber(ARGV[1])

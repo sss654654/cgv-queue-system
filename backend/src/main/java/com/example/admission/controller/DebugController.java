@@ -1,7 +1,5 @@
 package com.example.admission.controller;
 
-import com.example.admission.KinesisAdmissionConsumer;
-import com.example.admission.KinesisAdmissionProducer;
 import com.example.admission.service.AdmissionMetricsService;
 import com.example.admission.service.AdmissionService;
 import com.example.admission.ws.WebSocketUpdateService;
@@ -22,19 +20,13 @@ public class DebugController {
 
     private final AdmissionService admissionService;
     private final AdmissionMetricsService metricsService;
-    private final KinesisAdmissionProducer kinesisProducer;
-    private final KinesisAdmissionConsumer kinesisConsumer;
     private final WebSocketUpdateService webSocketUpdateService;
 
     public DebugController(AdmissionService admissionService,
                            AdmissionMetricsService metricsService,
-                           KinesisAdmissionProducer kinesisProducer,
-                           KinesisAdmissionConsumer kinesisConsumer,
                            WebSocketUpdateService webSocketUpdateService) {
         this.admissionService = admissionService;
         this.metricsService = metricsService;
-        this.kinesisProducer = kinesisProducer;
-        this.kinesisConsumer = kinesisConsumer;
         this.webSocketUpdateService = webSocketUpdateService;
     }
 
@@ -42,24 +34,14 @@ public class DebugController {
     @GetMapping("/status")
     public ResponseEntity<Map<String, Object>> getFullSystemStatus() {
         Map<String, Object> status = new HashMap<>();
-        
+
         try {
             status.put("systemSummary", metricsService.getSystemSummary());
             status.put("webSocketStats", webSocketUpdateService.getWebSocketStats());
-
-            // ✨✨✨ 핵심 수정 ✨✨✨
-            // 컴파일 오류를 유발하는 Kinesis 관련 상태 조회 로직을 임시로 비활성화합니다.
-            // 이 부분은 시스템의 핵심 기능에 영향을 주지 않습니다.
-            // status.put("kinesisConsumerStats", kinesisConsumer.getConsumerStats());
-            // status.put("kinesisProducerHealthy", kinesisProducer.isKinesisHealthy());
-            
-            // 임시로 Kinesis 상태를 "CHECK_DISABLED"로 표시합니다.
-            status.put("kinesisStatus", "CHECK_DISABLED");
-            
         } catch (Exception e) {
             status.put("error", "상태 조회 중 오류 발생: " + e.getMessage());
         }
-        
+
         return ResponseEntity.ok(status);
     }
 }

@@ -20,16 +20,15 @@ public class StatusController {
     @GetMapping("/check")
     public ResponseEntity<Map<String, Object>> checkUserStatus(
             @RequestParam String requestId,
-            @RequestParam String sessionId,
             @RequestParam String movieId) {
         
-        // isUserInActiveSession 메서드 시그니처에 맞게 호출
-        if (admissionService.isUserInActiveSession("movie", movieId, sessionId, requestId)) {
+        // isUserInActiveSession: requestId만으로 조회 (sessionId 제거)
+        if (admissionService.isUserInActiveSession("movie", movieId, requestId)) {
             return ResponseEntity.ok(Map.of("status", "ACTIVE", "action", "REDIRECT_TO_SEATS"));
         }
-        
-        // getUserRank 메서드 시그니처에 맞게 호출
-        Long rank = admissionService.getUserRank("movie", movieId, sessionId, requestId);
+
+        // getUserRank: requestId만으로 조회 (sessionId 제거)
+        Long rank = admissionService.getUserRank("movie", movieId, requestId);
         
         if (rank != null) {
             long totalWaiting = admissionService.getTotalWaitingCount("movie", movieId);

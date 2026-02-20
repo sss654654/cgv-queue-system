@@ -110,8 +110,8 @@ public class AdmissionMetricsService {
     }
 
     /**
-     * 🔹 SCAN 제거: 직접적인 Set 접근으로 활성 세션 수 계산
-     * NumberFormatException 에러 해결을 위해 SCAN 명령을 사용하지 않습니다.
+     * SCAN 제거: Sorted Set ZCARD로 활성 세션 수 계산
+     * Key pattern: sessions:{movieId}:active (Sorted Set)
      */
     public long getAllActiveSessionsCount() {
         try {
@@ -123,8 +123,8 @@ public class AdmissionMetricsService {
             long total = 0L;
             for (String movieId : movieIds) {
                 try {
-                    String activeSessionsKey = "active_sessions:movie:" + movieId;
-                    Long sessionCount = redisTemplate.opsForSet().size(activeSessionsKey);
+                    String activeSessionsKey = "sessions:{" + movieId + "}:active";
+                    Long sessionCount = redisTemplate.opsForZSet().zCard(activeSessionsKey);
                     if (sessionCount != null) {
                         total += sessionCount;
                     }
@@ -143,8 +143,8 @@ public class AdmissionMetricsService {
     }
 
     /**
-     * 🔹 SCAN 제거: 직접적인 Set 접근으로 대기 사용자 수 계산
-     * NumberFormatException 에러 해결을 위해 SCAN 명령을 사용하지 않습니다.
+     * SCAN 제거: Sorted Set ZCARD로 대기 사용자 수 계산
+     * Key pattern: sessions:{movieId}:waiting (Sorted Set)
      */
     public long getAllWaitingUsersCount() {
         try {
@@ -164,7 +164,7 @@ public class AdmissionMetricsService {
             long total = 0L;
             for (String movieId : allMovieIds) {
                 try {
-                    String waitingQueueKey = "waiting_queue:movie:" + movieId;
+                    String waitingQueueKey = "sessions:{" + movieId + "}:waiting";
                     Long waitingCount = redisTemplate.opsForZSet().zCard(waitingQueueKey);
                     if (waitingCount != null) {
                         total += waitingCount;
