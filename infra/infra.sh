@@ -1,7 +1,7 @@
 #!/bin/bash
 # =============================================================================
 # CGV 인프라 관리 스크립트
-# 6-Stack Terraform + K8s YAML 일괄 관리
+# 7-Stack Terraform + K8s YAML 일괄 관리
 #
 # 사용법:
 #   ./infra.sh plan                  # 전체 스택 Plan (변경 사항 미리보기)
@@ -15,7 +15,7 @@
 #
 # 의존성 순서:
 #   s3-dynamodb → cgv-vpc → cgv-security → cgv-database → cgv-eks → cgv-ecr
-#   → kubectl apply (k8s/)
+#   → kubectl apply (k8s/) → cgv-monitoring (ALB 생성 후)
 #
 # 사전 요구사항:
 #   - AWS CLI 설정 완료 (aws configure)
@@ -24,12 +24,14 @@
 #   - cgv-database 배포 시: export TF_VAR_db_password='비밀번호'
 #                           export TF_VAR_redis_auth_token='토큰'
 #   - cgv-vpc 배포 시:      export TF_VAR_alert_email='이메일'
+#   - cgv-monitoring 배포 시: terraform apply -var='alb_arn_suffix=...'
 # =============================================================================
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # --- 스택 순서 (의존성 체인) ---
+# cgv-monitoring은 ALB 생성 후 별도 적용 (apply_all에서는 제외, 개별 실행)
 STACKS=(
   "s3-dynamodb"
   "cgv-vpc"
@@ -39,8 +41,15 @@ STACKS=(
   "cgv-ecr"
 )
 
+# cgv-monitoring은 Helm 배포(2.3) 이후 ALB ARN suffix를 확인한 뒤 적용
+# ./infra.sh apply cgv-monitoring 으로 개별 실행
+OPTIONAL_STACKS=(
+  "cgv-monitoring"
+)
+
 # --- K8s YAML 적용 순서 ---
 K8S_YAMLS=(
+  "namespaces.yaml"
   "karpenter-ec2nodeclass.yaml"
   "karpenter-nodepool-infra.yaml"
   "karpenter-nodepool-dev.yaml"
@@ -99,6 +108,7 @@ usage() {
     echo "  $((i+1)). ${STACKS[$i]}"
   done
   echo "  7. k8s (kubectl)"
+  echo "  8. cgv-monitoring (ALB 생성 후 별도 적용)"
   echo ""
   echo "예시:"
   echo "  $0 plan                    # 전체 Plan"
@@ -114,13 +124,13 @@ usage() {
 # 스택 이름 유효성 검사
 validate_stack() {
   local target=$1
-  for stack in "${STACKS[@]}"; do
+  for stack in "${STACKS[@]}" "${OPTIONAL_STACKS[@]}"; do
     if [ "$stack" = "$target" ]; then
       return 0
     fi
   done
   log_err "알 수 없는 스택: $target"
-  echo "사용 가능한 스택: ${STACKS[*]}"
+  echo "사용 가능한 스택: ${STACKS[*]} ${OPTIONAL_STACKS[*]}"
   exit 1
 }
 
@@ -205,7 +215,7 @@ tf_destroy() {
 # 전체 스택 작업
 # =============================================================================
 plan_all() {
-  log_header "전체 Plan (6 Stacks)"
+  log_header "전체 Plan (6 Stacks + cgv-monitoring은 개별 실행)"
 
   local changes=0
   local no_changes=0
@@ -225,7 +235,10 @@ apply_all() {
   for i in "${!STACKS[@]}"; do
     echo "  $((i+1)). ${STACKS[$i]}"
   done
-  echo "  7. k8s (kubectl apply)"
+  echo "  7. k8s (kubectl apply — namespaces + Karpenter + Redis)"
+  echo ""
+  echo -e "${CYAN}참고: cgv-monitoring은 ALB 생성 후 별도 실행${NC}"
+  echo "  ./infra.sh apply cgv-monitoring"
   echo ""
 
   read -p "계속하시겠습니까? (y/N): " confirm
@@ -290,9 +303,7 @@ apply_k8s_resources() {
 
   log_ok "kubeconfig 업데이트 완료"
 
-  # cgv-dev 네임스페이스 생성 (redis-dev.yaml에 필요)
-  kubectl create namespace cgv-dev --dry-run=client -o yaml | kubectl apply -f -
-
+  # namespaces.yaml이 모든 네임스페이스를 관리하므로 별도 생성 불필요
   for yaml in "${K8S_YAMLS[@]}"; do
     echo "  kubectl apply -f ${yaml}"
     kubectl apply -f "${SCRIPT_DIR}/k8s/${yaml}"
