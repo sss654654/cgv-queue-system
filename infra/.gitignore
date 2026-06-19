@@ -1,7 +1,0 @@
-# Terraform
-.terraform/
-*.tfstate
-*.tfstate.*
-crash.log
-override.tf
-.terraform.lock.hcl
