@@ -24,8 +24,6 @@ services:
   redis:
     image: redis:7-alpine
     container_name: redis
-    ports:
-      - "6379:6379"
     networks:
       - cgv-network
 
@@ -38,6 +36,8 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=local
+      - REDIS_HOST=redis
+      - ENABLE_K8S_DISCOVERY=false
     volumes:
       - ./target/classes:/app/BOOT-INF/classes
     depends_on:
